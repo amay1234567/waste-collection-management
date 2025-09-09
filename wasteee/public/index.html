@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waste Collection Management</title>
+  <link href="style.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans p-4">
+
+  <!-- Modal -->
+  <div id="modalContainer" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-80 text-center">
+      <p id="modalMessage" class="text-lg font-semibold mb-4"></p>
+      <button id="closeModalButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-200 shadow-md">OK</button>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+<!-- Header -->
+<header class="text-center mb-8">
+  <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">Waste Collection Management</h1>
+  <p class="text-gray-500 mt-2">A simple system for tracking waste collection requests.</p>
+  <button onclick="window.location.href='dashboard.html'"
+    class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all duration-200 shadow-md">
+    Go to Dashboard
+  </button>
+</header>
+
+
+<!-- Dashboard -->
+<section id="dashboard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+  <div role="button"
+       class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
+    <p class="text-xl font-bold" id="totalCount">0</p>
+    <p class="text-sm">Total Requests</p>
+  </div>
+
+  <div role="button"
+       class="cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
+    <p class="text-xl font-bold" id="pendingCount">0</p>
+    <p class="text-sm">Pending</p>
+  </div>
+
+  <div role="button"
+       class="cursor-pointer bg-green-500 hover:bg-green-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
+    <p class="text-xl font-bold" id="collectedCount">0</p>
+    <p class="text-sm">Collected</p>
+  </div>
+</section>
+
+<script>
+  function toggleDashboard() {
+    const dashboard = document.getElementById("dashboard");
+    dashboard.classList.toggle("hidden"); // show/hide
+    dashboard.scrollIntoView({ behavior: "smooth" }); // scroll into view when shown
+  }
+</script>
+
+    <!-- 🔹 Pincode Lookup Section -->
+    <section class="bg-gray-50 p-6 rounded-lg shadow-inner mb-8">
+      <h2 class="text-2xl font-bold text-gray-700 mb-4">Find Your Place</h2>
+      <div class="space-y-4">
+        <input type="text" id="pincodeInput" placeholder="Enter 6-digit Pincode"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p id="placeResult" class="text-gray-700 font-medium mt-2"></p>
+      </div>
+    </section>
+
+    <!-- Form -->
+    <section class="bg-gray-50 p-6 rounded-lg shadow-inner mb-8">
+      <h2 class="text-2xl font-bold text-gray-700 mb-4">Submit a Request</h2>
+      <form id="requestForm" class="space-y-4">
+        <div>
+          <label for="location" class="block text-gray-700 font-medium mb-1">Location</label>
+          <input type="text" id="location" name="location" placeholder="e.g., Block A, 1st Floor"
+            required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label for="wasteType" class="block text-gray-700 font-medium mb-1">Waste Type</label>
+          <select id="wasteType" name="wasteType" required
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select Waste Type</option>
+            <option value="General Waste">General Waste</option>
+            <option value="Recyclable">Recyclable</option>
+            <option value="Electronic Waste">Electronic Waste</option>
+            <option value="Organic Waste">Organic Waste</option>
+          </select>
+        </div>
+        <button type="submit"
+          class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl">
+          Submit Request
+        </button>
+      </form>
+    </section>
+
+    <!-- Requests List -->
+    <section>
+      <h2 class="text-2xl font-bold text-gray-700 mb-4">All Requests</h2>
+      <div id="requestsList" class="space-y-4">
+        <p class="text-center text-gray-500 py-4">Loading requests...</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

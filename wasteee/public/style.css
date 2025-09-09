@@ -1,0 +1,164 @@
+/* Additional custom styles for the waste management app */
+
+/* Loading animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom focus styles */
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Hover effects for cards */
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Pulse animation for pending status */
+.pulse-yellow {
+  animation: pulse-yellow 2s infinite;
+}
+
+@keyframes pulse-yellow {
+  0%, 100% {
+    background-color: rgb(253, 224, 71);
+  }
+  50% {
+    background-color: rgb(250, 204, 21);
+  }
+}
+
+/* Success animation */
+.success-bounce {
+  animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 60%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  80% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Modal backdrop blur effect */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
+
+/* Form field animation */
+.form-field {
+  position: relative;
+  overflow: hidden;
+}
+
+.form-field::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(59, 130, 246, 0.1),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.form-field:focus-within::before {
+  left: 100%;
+}
+
+/* Status indicator dots */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-dot.pending {
+  background-color: #f59e0b;
+  animation: pulse 2s infinite;
+}
+
+.status-dot.in-progress {
+  background-color: #3b82f6;
+}
+
+.status-dot.collected {
+  background-color: #10b981;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .mobile-responsive {
+    padding: 1rem;
+  }
+  
+  .mobile-stack {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-full-width {
+    width: 100% !important;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-bg {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+}
