@@ -1,43 +1,45 @@
 // public/app.js
 
 document.addEventListener("DOMContentLoaded", () => {
+  const API_BASE = "https://waste-collection-management.vercel.app"; // 🔹 Vercel backend
+
   const form = document.getElementById("requestForm");
   const requestsList = document.getElementById("requestsList");
   const modalContainer = document.getElementById("modalContainer");
   const modalMessage = document.getElementById("modalMessage");
   const closeModalButton = document.getElementById("closeModalButton");
 
-  // 🔹 Dashboard counters
+  // Dashboard counters
   const totalCountEl = document.getElementById("totalCount");
   const pendingCountEl = document.getElementById("pendingCount");
   const collectedCountEl = document.getElementById("collectedCount");
 
-  // 🔹 Auto-fill location from pincode
-const pincodeInput = document.getElementById("pincodeInput");
-const locationInput = document.getElementById("location");
+  // Auto-fill location from pincode
+  const pincodeInput = document.getElementById("pincodeInput");
+  const locationInput = document.getElementById("location");
 
-pincodeInput.addEventListener("blur", async () => {
-  const pincode = pincodeInput.value.trim();
+  pincodeInput.addEventListener("blur", async () => {
+    const pincode = pincodeInput.value.trim();
 
-  if (/^\d{6}$/.test(pincode)) {
-    try {
-      const res = await fetch(`/api/pincode/${pincode}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.area) {
-          locationInput.value = `${data.area}, ${data.city}, ${data.state}`;
-        } else {
-          locationInput.value = "";
-          showModal("No area found for this pincode.");
+    if (/^\d{6}$/.test(pincode)) {
+      try {
+        const res = await fetch(`${API_BASE}/api/pincode/${pincode}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.area) {
+            locationInput.value = `${data.area}, ${data.city}, ${data.state}`;
+          } else {
+            locationInput.value = "";
+            showModal("No area found for this pincode.");
+          }
         }
+      } catch (err) {
+        console.error("Pincode lookup failed", err);
       }
-    } catch (err) {
-      console.error("Pincode lookup failed", err);
     }
-  }
-});
+  });
 
-  // ✅ Show modal
+  // Show modal
   function showModal(message) {
     modalMessage.textContent = message;
     modalContainer.classList.remove("hidden");
@@ -46,12 +48,12 @@ pincodeInput.addEventListener("blur", async () => {
     modalContainer.classList.add("hidden");
   });
 
-  // ✅ Fetch and display requests
+  // Fetch and display requests
   async function loadRequests() {
-    const res = await fetch("/api/requests");
+    const res = await fetch(`${API_BASE}/api/requests`);
     const data = await res.json();
 
-    // 🔹 Update dashboard counts
+    // Update dashboard counts
     const total = data.length;
     const pending = data.filter(r => r.status === "Pending").length;
     const collected = data.filter(r => r.status === "Collected").length;
@@ -60,11 +62,12 @@ pincodeInput.addEventListener("blur", async () => {
     pendingCountEl.textContent = pending;
     collectedCountEl.textContent = collected;
 
-    // 🔹 Render requests list
+    // Render requests list
     if (!data.length) {
       requestsList.innerHTML = `<p class="text-center text-gray-500 py-4">No requests yet.</p>`;
       return;
     }
+
     requestsList.innerHTML = data.map(r => `
       <div class="p-4 bg-white rounded-lg shadow flex justify-between items-center">
         <div>
@@ -87,19 +90,19 @@ pincodeInput.addEventListener("blur", async () => {
     `).join("");
   }
 
-  // ✅ Submit form
+  // Submit form
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const location = document.getElementById("location").value.trim();
+    const location = locationInput.value.trim();
     const wasteType = document.getElementById("wasteType").value;
-    const pincode = document.getElementById("pincodeInput").value.trim();
+    const pincode = pincodeInput.value.trim();
 
     if (!/^\d{6}$/.test(pincode)) {
       showModal("Please enter a valid 6-digit pincode.");
       return;
     }
 
-    const res = await fetch("/api/requests", {
+    const res = await fetch(`${API_BASE}/api/requests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ location, wasteType, pincode })
@@ -114,15 +117,15 @@ pincodeInput.addEventListener("blur", async () => {
     }
   });
 
-  // ✅ Delete request
+  // Delete request
   window.deleteRequest = async (id) => {
-    await fetch(`/api/requests/${id}`, { method: "DELETE" });
+    await fetch(`${API_BASE}/api/requests/${id}`, { method: "DELETE" });
     loadRequests();
   };
 
-  // ✅ Mark as Collected
+  // Mark as Collected
   window.markCollected = async (id) => {
-    await fetch(`/api/requests/${id}`, {
+    await fetch(`${API_BASE}/api/requests/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Collected" })
