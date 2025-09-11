@@ -1,3 +1,4 @@
+// public/app.js
 document.addEventListener("DOMContentLoaded", () => {
   // Auto-detect API base (works locally + deployed)
   const API_BASE = window.location.origin;
@@ -49,44 +50,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fetch and display requests
   async function loadRequests() {
-    const res = await fetch(`${API_BASE}/api/requests`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_BASE}/api/requests`);
+      if (!res.ok) throw new Error("Failed to fetch requests");
 
-    // Update dashboard counts
-    const total = data.length;
-    const pending = data.filter(r => r.status === "Pending").length;
-    const collected = data.filter(r => r.status === "Collected").length;
+      const data = await res.json();
 
-    totalCountEl.textContent = total;
-    pendingCountEl.textContent = pending;
-    collectedCountEl.textContent = collected;
+      // Update dashboard counts
+      const total = data.length;
+      const pending = data.filter(r => r.status === "Pending").length;
+      const collected = data.filter(r => r.status === "Collected").length;
 
-    // Render requests list
-    if (!data.length) {
-      requestsList.innerHTML = `<p class="text-center text-gray-500 py-4">No requests yet.</p>`;
-      return;
+      totalCountEl.textContent = total;
+      pendingCountEl.textContent = pending;
+      collectedCountEl.textContent = collected;
+
+      // Render requests list
+      if (!data.length) {
+        requestsList.innerHTML = `<p class="text-center text-gray-500 py-4">No requests yet.</p>`;
+        return;
+      }
+
+      requestsList.innerHTML = data.map(r => `
+        <div class="p-4 bg-white rounded-lg shadow flex justify-between items-center">
+          <div>
+            <p class="font-bold">Request #${r.id}</p>
+            <p><strong>Location:</strong> ${r.location}</p>
+            <p><strong>Waste Type:</strong> ${r.wasteType}</p>
+            <p><strong>Pincode:</strong> ${r.pincode}</p>
+            <p><strong>Status:</strong> 
+              <span class="px-2 py-1 rounded text-white ${r.status === "Pending" ? "bg-yellow-500" : "bg-green-600"}">
+                ${r.status}
+              </span>
+            </p>
+            <p class="text-sm text-gray-500">Submitted: ${r.timestamp}</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="markCollected(${r.id})" class="bg-green-500 text-white px-3 py-1 rounded">Mark Collected</button>
+            <button onclick="deleteRequest(${r.id})" class="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      console.error("Error loading requests", err);
+      requestsList.innerHTML = `<p class="text-center text-red-500">Failed to load requests.</p>`;
     }
-
-    requestsList.innerHTML = data.map(r => `
-      <div class="p-4 bg-white rounded-lg shadow flex justify-between items-center">
-        <div>
-          <p class="font-bold">Request #${r.id}</p>
-          <p><strong>Location:</strong> ${r.location}</p>
-          <p><strong>Waste Type:</strong> ${r.wasteType}</p>
-          <p><strong>Pincode:</strong> ${r.pincode}</p>
-          <p><strong>Status:</strong> 
-            <span class="px-2 py-1 rounded text-white ${r.status === "Pending" ? "bg-yellow-500" : "bg-green-600"}">
-              ${r.status}
-            </span>
-          </p>
-          <p class="text-sm text-gray-500">Submitted: ${r.timestamp}</p>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="markCollected(${r.id})" class="bg-green-500 text-white px-3 py-1 rounded">Mark Collected</button>
-          <button onclick="deleteRequest(${r.id})" class="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
-        </div>
-      </div>
-    `).join("");
   }
 
   // Submit form
@@ -101,36 +109,51 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const res = await fetch(`${API_BASE}/api/requests`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ location, wasteType, pincode })
-    });
+    try {
+      const res = await fetch(`${API_BASE}/api/requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location, wasteType, pincode })
+      });
 
-    if (res.ok) {
-      showModal("Request submitted successfully!");
-      form.reset();
-      loadRequests();
-    } else {
+      if (res.ok) {
+        showModal("Request submitted successfully!");
+        form.reset();
+        loadRequests();
+      } else {
+        const errData = await res.json();
+        showModal(errData.error || "Error submitting request. Try again.");
+      }
+    } catch (err) {
+      console.error("Submit failed", err);
       showModal("Error submitting request. Try again.");
     }
   });
 
   // Delete request
   window.deleteRequest = async (id) => {
-    await fetch(`${API_BASE}/api/requests/${id}`, { method: "DELETE" });
-    loadRequests();
+    try {
+      await fetch(`${API_BASE}/api/requests?id=${id}`, { method: "DELETE" });
+      loadRequests();
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
   };
 
   // Mark as Collected
   window.markCollected = async (id) => {
-    await fetch(`${API_BASE}/api/requests/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "Collected" })
-    });
-    loadRequests();
+    try {
+      await fetch(`${API_BASE}/api/requests`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "Collected" })
+      });
+      loadRequests();
+    } catch (err) {
+      console.error("Update failed", err);
+    }
   };
 
+  // Initial load
   loadRequests();
 });
