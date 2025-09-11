@@ -18,45 +18,36 @@
   </div>
 
   <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
-<!-- Header -->
-<header class="text-center mb-8">
-  <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">Waste Collection Management</h1>
-  <p class="text-gray-500 mt-2">A simple system for tracking waste collection requests.</p>
-  <button onclick="window.location.href='dashboard.html'"
-    class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all duration-200 shadow-md">
-    Go to Dashboard
-  </button>
-</header>
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">Waste Collection Management</h1>
+      <p class="text-gray-500 mt-2">A simple system for tracking waste collection requests.</p>
+      <button onclick="window.location.href='dashboard.html'"
+        class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all duration-200 shadow-md">
+        Go to Dashboard
+      </button>
+    </header>
 
+    <!-- Dashboard -->
+    <section id="dashboard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div role="button"
+          class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
+        <p class="text-xl font-bold" id="totalCount">0</p>
+        <p class="text-sm">Total Requests</p>
+      </div>
 
-<!-- Dashboard -->
-<section id="dashboard" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-  <div role="button"
-       class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
-    <p class="text-xl font-bold" id="totalCount">0</p>
-    <p class="text-sm">Total Requests</p>
-  </div>
+      <div role="button"
+          class="cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
+        <p class="text-xl font-bold" id="pendingCount">0</p>
+        <p class="text-sm">Pending</p>
+      </div>
 
-  <div role="button"
-       class="cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
-    <p class="text-xl font-bold" id="pendingCount">0</p>
-    <p class="text-sm">Pending</p>
-  </div>
-
-  <div role="button"
-       class="cursor-pointer bg-green-500 hover:bg-green-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
-    <p class="text-xl font-bold" id="collectedCount">0</p>
-    <p class="text-sm">Collected</p>
-  </div>
-</section>
-
-<script>
-  function toggleDashboard() {
-    const dashboard = document.getElementById("dashboard");
-    dashboard.classList.toggle("hidden"); // show/hide
-    dashboard.scrollIntoView({ behavior: "smooth" }); // scroll into view when shown
-  }
-</script>
+      <div role="button"
+          class="cursor-pointer bg-green-500 hover:bg-green-600 text-white p-5 rounded-lg text-center shadow-md transition transform hover:scale-105">
+        <p class="text-xl font-bold" id="collectedCount">0</p>
+        <p class="text-sm">Collected</p>
+      </div>
+    </section>
 
     <!-- 🔹 Pincode Lookup Section -->
     <section class="bg-gray-50 p-6 rounded-lg shadow-inner mb-8">
@@ -64,6 +55,7 @@
       <div class="space-y-4">
         <input type="text" id="pincodeInput" placeholder="Enter 6-digit Pincode"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button id="pincodeBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg shadow">Check</button>
         <p id="placeResult" class="text-gray-700 font-medium mt-2"></p>
       </div>
     </section>
@@ -105,24 +97,80 @@
   </div>
 
   <!-- App Script -->
-  <script src="app.js"></script>
-  <script type="text/javascript">
-    (function (l) {
-      if (l.search[1] === "/") {
-        var decoded = l.search
-          .slice(1)
-          .split("&")
-          .map(function (s) {
-            return s.replace(/~and~/g, "&");
-          })
-          .join("?");
-        window.history.replaceState(
-          null,
-          null,
-          l.pathname.slice(0, -1) + decoded + l.hash
-        );
-      }
-    })(window.location);
+  <script>
+    // Modal handling
+    const modalContainer = document.getElementById("modalContainer");
+    const modalMessage = document.getElementById("modalMessage");
+    const closeModalButton = document.getElementById("closeModalButton");
+
+    function showModal(msg) {
+      modalMessage.textContent = msg;
+      modalContainer.classList.remove("hidden");
+    }
+
+    closeModalButton.addEventListener("click", () => {
+      modalContainer.classList.add("hidden");
+    });
+
+    // 🔹 Pincode Lookup
+    document.getElementById("pincodeBtn").addEventListener("click", () => {
+      const code = document.getElementById("pincodeInput").value.trim();
+      if (!code) return showModal("❌ Please enter a pincode");
+
+      fetch(`/api/pincode?code=${code}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById("placeResult").textContent = "❌ Pincode not found";
+          } else {
+            document.getElementById("placeResult").textContent = `📍 ${data.area}, ${data.city}, ${data.state}`;
+          }
+        })
+        .catch(() => showModal("⚠️ Error fetching pincode"));
+    });
+
+    // 🔹 Form Submission
+    document.getElementById("requestForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const location = document.getElementById("location").value.trim();
+      const wasteType = document.getElementById("wasteType").value;
+
+      fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location, wasteType })
+      })
+      .then(res => res.json())
+      .then(data => {
+        showModal("✅ Request submitted successfully!");
+        this.reset();
+      })
+      .catch(() => showModal("⚠️ Error submitting request"));
+    });
+
+    // 🔹 Load All Requests
+    function loadRequests() {
+      fetch("/api/requests")
+        .then(res => res.json())
+        .then(requests => {
+          const list = document.getElementById("requestsList");
+          if (!requests.length) {
+            list.innerHTML = `<p class="text-center text-gray-500 py-4">No requests yet.</p>`;
+            return;
+          }
+          list.innerHTML = requests.map(r => `
+            <div class="p-4 bg-gray-50 rounded-lg shadow flex justify-between items-center">
+              <div>
+                <p class="font-semibold">${r.location} - ${r.wasteType}</p>
+                <p class="text-sm text-gray-500">Status: ${r.status}</p>
+              </div>
+            </div>
+          `).join("");
+        })
+        .catch(() => showModal("⚠️ Error loading requests"));
+    }
+
+    loadRequests();
   </script>
 </body>
 </html>
