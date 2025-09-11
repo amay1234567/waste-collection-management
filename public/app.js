@@ -1,7 +1,6 @@
-// public/app.js
-
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://waste-collection-management.vercel.app"; // 🔹 Vercel backend
+  // Auto-detect API base (works locally + deployed)
+  const API_BASE = window.location.origin;
 
   const form = document.getElementById("requestForm");
   const requestsList = document.getElementById("requestsList");
