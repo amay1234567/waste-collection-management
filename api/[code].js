@@ -5,7 +5,8 @@ const pincodeData = {
   "110001": { area: "Connaught Place", city: "New Delhi", state: "Delhi" },
   "400001": { area: "Fort", city: "Mumbai", state: "Maharashtra" },
   "600001": { area: "Parrys", city: "Chennai", state: "Tamil Nadu" },
-  "700001": { area: "BBD Bagh", city: "Kolkata", state: "West Bengal" }
+  "700001": { area: "BBD Bagh", city: "Kolkata", state: "West Bengal" },
+    "500001": { area: "Hyderabad GPO", city: "Hyderabad", state: "Telangana" }
 };
 
 export default function handler(req, res) {
