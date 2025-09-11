@@ -1,5 +1,4 @@
 // pages/api/pincode/[code].js
-
 const pincodeData = {
   "560001": { area: "Bangalore GPO", city: "Bangalore", state: "Karnataka" },
   "110001": { area: "Connaught Place", city: "New Delhi", state: "Delhi" },
@@ -7,7 +6,9 @@ const pincodeData = {
 };
 
 export default function handler(req, res) {
-  const { code } = req.query;  // gets the dynamic part of the URL
+  const { code } = req.query;
+
+  console.log("Pincode requested:", code); // debug log
 
   if (pincodeData[code]) {
     res.status(200).json(pincodeData[code]);
